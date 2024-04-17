@@ -5,32 +5,22 @@ cursor = connection.cursor()
 
 
 def get_lesson_id(class_num: int, profile_id: int) -> list:
-    data = cursor.execute('SELECT lesson_id FROM timetable WHERE class = (?) AND profile_id = (?)',
+    data = cursor.execute('SELECT lesson_id FROM timetable WHERE class = (?) AND profile_id = (?) ORDER BY num ASC ',
                           (class_num, profile_id,))
     data = data.fetchall()
+    print(data)
     return data
-
-
-def get_number_of_lessons(class_num: int, day: str, profile_id: int) -> list:
-    data = cursor.execute('SELECT profile_id FROM timetable WHERE class = (?) AND day = (?) AND profile_id = (?)', (class_num, day, profile_id))
-    
 
 
 def get_lesson(class_num: int, profile_id: int) -> list:
-    lesson_list = get_lesson_id(class_num, profile_id)
-    lesson_list = [i[0] for i in lesson_list]
-    lesson_list_str = " ,".join(lesson_list)
-    # print(lesson_list_str)
-    data = cursor.execute('SELECT name FROM lessons WHERE id IN (?, ?, ?, ?, ?, ?, ?)', (lesson_list_str.split(' ,')[0],
-                                                                                         lesson_list_str.split(' ,')[1],
-                                                                                         lesson_list_str.split(' ,')[2],
-                                                                                         lesson_list_str.split(' ,')[3],
-                                                                                         lesson_list_str.split(' ,')[4],
-                                                                                         lesson_list_str.split(' ,')[5],
-                                                                                         lesson_list_str.split(' ,')[6], ))
-    data = data.fetchall()
-    data = [i[0] for i in data]
-    return data
+    lesson_list_obj = get_lesson_id(class_num, profile_id)
+    lessons = []
+    for i in lesson_list_obj:
+        data = cursor.execute('SELECT name FROM lessons WHERE id = (?)',(i[0],)).fetchall()
+        lessons.append(data[0][0])
+
+    print(lessons)
+    return lessons
 
 
 def get_profile_id(class_num: int) -> list:
