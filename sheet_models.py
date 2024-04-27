@@ -57,8 +57,10 @@ def get_id_of_time(class_num: int, profile_id: int, day: str) -> list:
 
 def get_time_of_lesson(class_num: int, profile_id: int, day: str) -> list:
     times = []
-    for i in get_id_of_time(class_num, profile_id, day):
-        for j in time_sheet.get_all_values():
+    id_times = get_id_of_time(class_num, profile_id, day)
+    values = time_sheet.get_all_values()
+    for i in id_times:
+        for j in values:
             if j[0] == i:
                 times.append(j[1])
 
