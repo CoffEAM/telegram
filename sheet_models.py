@@ -17,10 +17,15 @@ profiles_sheet = gc.open("shsheduler").worksheet("profiles")
 lessons_sheet = gc.open("shsheduler").worksheet("lessons")
 time_sheet = gc.open("shsheduler").worksheet("time")
 
+timetable_all_values = timetable_sheet.get_all_values()
+profiles_all_values = profiles_sheet.get_all_values()
+lessons_all_values = lessons_sheet.get_all_values()
+time_all_values = time_sheet.get_all_values()
+
 
 def get_lesson_id(class_num: int, profile_id: int, day: str) -> list:
     lessons = []
-    for i in timetable_sheet.get_all_values():
+    for i in timetable_all_values:
         if str(class_num) == i[2] and str(profile_id) == i[4] and day == i[5]:
             lessons.append(i[6])
 
@@ -29,17 +34,18 @@ def get_lesson_id(class_num: int, profile_id: int, day: str) -> list:
 
 def get_num_of_lesson(class_num: int, profile_id: int, day: str) -> list:
     nums = []
-    for i in timetable_sheet.get_all_values():
+    for i in timetable_all_values:
         if str(class_num) == i[2] and str(profile_id) == i[4] and day == i[5]:
             nums.append(i[1])
 
     return nums
 
 
-def get_lesson(class_num: int, profile_id: int, day: str):
+def get_lesson(class_num: int, profile_id: int, day: str) -> list:
     lessons = []
-    for i in get_lesson_id(class_num, profile_id, day):
-        for j in lessons_sheet.get_all_values():
+    lessons_id = get_lesson_id(class_num, profile_id, day)
+    for i in lessons_id:
+        for j in lessons_all_values:
             if j[0] == i:
                 lessons.append(j[1])
 
@@ -48,7 +54,7 @@ def get_lesson(class_num: int, profile_id: int, day: str):
 
 def get_id_of_time(class_num: int, profile_id: int, day: str) -> list:
     times = []
-    for i in timetable_sheet.get_all_values():
+    for i in timetable_all_values:
         if str(class_num) == i[2] and str(profile_id) == i[4] and day == i[5]:
             times.append(i[7])
 
@@ -58,7 +64,7 @@ def get_id_of_time(class_num: int, profile_id: int, day: str) -> list:
 def get_time_of_lesson(class_num: int, profile_id: int, day: str) -> list:
     times = []
     id_times = get_id_of_time(class_num, profile_id, day)
-    values = time_sheet.get_all_values()
+    values = time_all_values
     for i in id_times:
         for j in values:
             if j[0] == i:
@@ -70,7 +76,7 @@ def get_time_of_lesson(class_num: int, profile_id: int, day: str) -> list:
 def get_profile_id_by_name(name_of_profile: str) -> list:
     profile_id = ''
 
-    for i in profiles_sheet.get_all_values():
+    for i in profiles_all_values:
         if i[1] == name_of_profile:
             profile_id = i[0]
 
@@ -85,7 +91,7 @@ def get_profiles() -> list:
     return profiles
 
 
-print(get_profiles())
+print(get_lesson_id(9, 6, 'пн'))
 
 
 

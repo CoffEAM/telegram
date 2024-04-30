@@ -4,7 +4,7 @@ from aiogram.filters.command import Command
 from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from bd import get_profiles, get_lesson, get_profile_id_by_name, get_num_lesson, get_time_of_lesson
+from sheet_models import get_profiles, get_lesson, get_profile_id_by_name, get_num_of_lesson, get_time_of_lesson
 router = Router()
 
 
@@ -55,16 +55,16 @@ async def selected_class_callback(query: types.CallbackQuery, state: FSMContext)
         await updated_inline_class(query, state)
 
 
-@router.callback_query(F.data.contains("symbol_"))
-async def selected_symbol_callback(query: types.CallbackQuery, state: FSMContext):
-    clicked_button = query.data.split("_")[-1]
-    print(clicked_button)
-    await state.update_data({"profile_id": clicked_button})
-    await query.message.edit_text('Выбери день недели')
-    await state.set_state(ClassState.day_selection.state)
-    await select_day_of_week(query, state)
-    if clicked_button == 'back':
-        await updated_inline_class(query, state)
+# @router.callback_query(F.data.contains("symbol_"))
+# async def selected_symbol_callback(query: types.CallbackQuery, state: FSMContext):
+#     clicked_button = query.data.split("_")[-1]
+#     print(clicked_button)
+#     await state.update_data({"profile_id": clicked_button})
+#     await query.message.edit_text('Выбери день недели')
+#     await state.set_state(ClassState.day_selection.state)
+#     await select_day_of_week(query, state)
+#     if clicked_button == 'back':
+#         await updated_inline_class(query, state)
 
 
 @router.callback_query(F.data.contains("weekday_"))
@@ -80,12 +80,18 @@ async def day_callback(query: types.CallbackQuery, state: FSMContext):
 async def print_lessons(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     id_profile = get_profile_id_by_name(data["profile_id"])
-    lessons = get_lesson(int(data["class_num"]), *id_profile[0], data['day'])
-    nums = get_num_lesson(int(data["class_num"]), *id_profile[0], data['day'])
-    times = get_time_of_lesson(int(data["class_num"]), *id_profile[0], data['day'])
+    print(data)
+    lessons = get_lesson(int(data["class_num"]), *id_profile, data['day'])
+    nums = get_num_of_lesson(int(data["class_num"]), *id_profile, data['day'])
+    times = get_time_of_lesson(int(data["class_num"]), *id_profile, data['day'])
     answer = ""
     for lesson in range(len(lessons)):
-        answer += f'<b>{nums[lesson][0]}.</b> {lessons[lesson]} — <i>{times[lesson]}</i>'+"\n"
+        if lessons[lesson] not in ['Разговоры о важном', 'Образовательные модули', 'Россия - мои горизонты', 'Нет урока']:
+            answer += f'<b>{nums[lesson][0]}.</b> {lessons[lesson]} — <i>{times[lesson]}</i>'+"\n"
+        elif lessons[lesson] in ['Разговоры о важном', 'Образовательные модули', 'Россия - мои горизонты']:
+            answer += f'<b>{nums[lesson][0]}</b> <u>{lessons[lesson]}</u> — <i>{times[lesson]}</i>' + "\n"
+        elif lessons[lesson] == 'Нет урока':
+            answer += f'<b>{nums[lesson][0]}.</b> <u>{lessons[lesson]}</u>' + "\n"
     await callback.message.answer(answer, parse_mode='html')
 
 
@@ -105,7 +111,7 @@ async def updated_inline_class(callback: types.CallbackQuery, state: FSMContext)
 
 async def updated_inline_profiles(callback: types.CallbackQuery, class_name: int, state: FSMContext):
     inline_kb2 = InlineKeyboardBuilder()
-    profiles = get_profiles(class_name)
+    profiles = get_profiles()
     s = ['👨‍🏭', '🧑‍💻', '👩‍🔬', '👩‍🏫', '👨‍🎤']
     for i in range(5):
         inline_kb2.button(text=f"{profiles[i] + s[i]}", callback_data=f"profiles_{profiles[i]}")
@@ -120,20 +126,20 @@ async def select_symbol_of_class(callback: types.CallbackQuery, state: FSMContex
     inline_kb = InlineKeyboardBuilder()
     data = await state.get_data()
     s1 = ['А', 'Б', 'В', 'Г', 'Д', 'Е']
-    s2 = ['а', 'б', 'в', 'г', 'д', 'е']
+    s2 = ['6', '7', '8', '9', '10', '11']
     for i in range(5):
-        inline_kb.button(text=f'{s1[i]}', callback_data=f'symbol_{s2[i]}')
+        inline_kb.button(text=f'{s1[i]}', callback_data=f'profiles_{s2[i]}')
     if data['class_num'] in ['5', '6']:
-        inline_kb.button(text=f'{s1[5]}', callback_data=f'symbol_{s2[5]}')
+        inline_kb.button(text=f'{s1[5]}', callback_data=f'profiles_{s2[5]}')
 
-    inline_kb.button(text=f"Назад◀️", callback_data=f"symbol_back")
+    inline_kb.button(text=f"Назад◀️", callback_data=f"profiles_back")
     if data['class_num'] in ['7', '8', '9']:
         inline_kb.adjust(5, 1)
     elif data['class_num'] in ['5', '6']:
         inline_kb.adjust(6, 1)
 
     await callback.message.edit_reply_markup(reply_markup=inline_kb.as_markup())
-    await state.set_state(ClassState.symbol_selection.state)
+    await state.set_state(ClassState.profile_selection.state)
 
 
 async def select_day_of_week(callback: types.CallbackQuery, state: FSMContext):
