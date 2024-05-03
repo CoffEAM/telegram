@@ -17,6 +17,8 @@ profiles_sheet = gc.open("shsheduler").worksheet("profiles")
 lessons_sheet = gc.open("shsheduler").worksheet("lessons")
 time_sheet = gc.open("shsheduler").worksheet("time")
 
+profiles_list = profiles_sheet.get('B3:B7')
+
 timetable_all_values = timetable_sheet.get_all_values()
 profiles_all_values = profiles_sheet.get_all_values()
 lessons_all_values = lessons_sheet.get_all_values()
@@ -85,7 +87,7 @@ def get_profile_id_by_name(name_of_profile: str) -> list:
 
 def get_profiles() -> list:
     profiles = []
-    for i in profiles_sheet.get('B3:B7'):
+    for i in profiles_list:
         profiles.append(i[0])
 
     return profiles
