@@ -1,5 +1,8 @@
 from google.oauth2.service_account import Credentials
 import gspread
+import asyncio
+from main import dp
+
 scopes = [
     'https://www.googleapis.com/auth/spreadsheets',
     'https://www.googleapis.com/auth/drive'
@@ -92,5 +95,27 @@ def get_profiles() -> list:
 
     return profiles
 
+
+async def update_data():
+    global last_data
+    new_data = gc.open("shsheduler").worksheet("timetable").get_all_values()
+    if new_data != last_data:
+        last_data = new_data
+
+
+async def scheduled(wait_for):
+    while True:
+        await asyncio.sleep(wait_for)
+        await update_data()
+
+if __name__ == '__main__':
+    last_data = timetable_all_values
+    loop = asyncio.get_event_loop()
+    loop.create_task(scheduled(600*6*10))
+    try:
+        loop.run_until_complete(dp.start_polling())
+    finally:
+        loop.run_until_complete(dp.storage.close())
+        loop.close()
 
 
