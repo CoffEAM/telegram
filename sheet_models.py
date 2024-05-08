@@ -93,7 +93,4 @@ def get_profiles() -> list:
     return profiles
 
 
-print(get_lesson_id(9, 6, 'пн'))
-
-
 
